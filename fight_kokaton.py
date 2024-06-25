@@ -56,6 +56,7 @@ class Bird:
         self.img = __class__.imgs[(+5, 0)]
         self.rct: pg.Rect = self.img.get_rect()
         self.rct.center = xy
+        self.dire = (+5, 0)
 
     def change_img(self, num: int, screen: pg.Surface):
         """
@@ -83,6 +84,9 @@ class Bird:
         if not (sum_mv[0] == 0 and sum_mv[1] == 0):
             self.img = __class__.imgs[tuple(sum_mv)]
         screen.blit(self.img, self.rct)
+        if sum_mv != [0, 0]:
+            self.dire = sum_mv
+
 
 class Beam:
     """
@@ -141,16 +145,46 @@ class Bomb:
 
 
 class Score():
+    """
+    スコアに関するクラス
+    """
     def __init__(self):
+        """
+        フォントと文字色を設定し、文字列Surfaceを生成
+        """
         self.fonto = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)
         self.score = 0
         self.img = self.fonto.render(f"スコア: {self.score}", 0, (0, 0, 255))
         self.rct = (100, HEIGHT-50)
 
-    def update(self, screen):
+    def update(self, screen: pg.Surface):
+        """
+        現在のスコアを表示させる文字列Surfaceの生成
+        スクリーンにblit
+        引数 screen：画面Surface
+        """
         self.img = self.fonto.render(f"スコア: {self.score}", 0, (0, 0, 255))
         screen.blit(self.img, self.rct)
 
+
+class Explosion():
+    """
+    爆発エフェクトを導入するクラス
+    """
+    def __init__(self):
+        """
+        元のgifと上下左右に反転したものの2つのsurfaceをリストに格納
+        爆発した爆弾の中央に座標を設定
+        爆発時間の設定
+        """
+        expl = []
+
+    def update():
+        """
+        爆発経過時間を１減算
+        爆発経過時間が制ならリストを交互に切り替えて爆発を演出
+        """
+        life = 1
 
 
 def main():
@@ -159,9 +193,10 @@ def main():
     bg_img = pg.image.load("fig/pg_bg.jpg")
     bird = Bird((300, 200))
     beam = None
+    be = []
     # bomb = Bomb((255, 0, 0), 10)
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
-    score = Score()
+    score = Score()  # Scoreインスタンスの生成
     clock = pg.time.Clock()
     tmr = 0
     while True:
@@ -170,8 +205,11 @@ def main():
                 return
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 # スペースキー押下でBeamクラスのインスタンス生成
-                beam = Beam(bird)            
-        screen.blit(bg_img, [0, 0])
+                beam = Beam(bird)  
+                be.append(beam)
+                for i in be:
+
+            screen.blit(bg_img, [0, 0])
         
         for bomb in bombs:
             if bird.rct.colliderect(bomb.rct):
@@ -191,11 +229,11 @@ def main():
                 if bombs[i].rct.colliderect(beam.rct):
                     bombs[i] = None
                     beam = None
-                    score.score += 1
+                    score.score += 1  # 爆弾を撃ち落としたらスコアアップ
                     bird.change_img(6, screen)
         bombs = [bomb for bomb in bombs if bomb is not None]
 
-        score.update(screen)
+        score.update(screen)  # updateメゾットを呼び出してスコアを描画
         pg.display.flip()
 
         key_lst = pg.key.get_pressed()
